@@ -5,11 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ログイン - 司令部メインフレーム</title>
     <style>
+        /* グローバルCSS変数 */
+        :root {
+            --main-text-color: #00ff00; /* ネオングリーン */
+            --sub-text-color: #c0c0c0; /* 薄いグレー */
+            --bg-color-dark: #111111;
+            --bg-color-medium: #1c1c1c;
+            --border-color-light: #3a3a3a;
+            --border-color-medium: #505050;
+            --box-shadow-color: rgba(0, 0, 0, 0.6);
+        }
+
         /* ベース設定 */
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #111111;
-            color: #c0c0c0;
+            background-color: var(--bg-color-dark);
+            color: var(--sub-text-color);
             margin: 0;
             padding: 0;
             display: flex;
@@ -17,17 +28,40 @@
             align-items: center;
             min-height: 100vh;
             text-align: center;
+            overflow: hidden; /* ロード中はスクロールを非表示に */
+        }
+
+        /* スキャンラインエフェクト */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.2) 1px,
+                transparent 2px,
+                transparent 3px
+            );
+            z-index: 9999;
+            opacity: 0.3;
         }
 
         /* ログインコンテナ */
         .login-container {
             width: 90%;
             max-width: 400px;
-            background-color: #1c1c1c;
-            border: 1px solid #3a3a3a;
+            background-color: var(--bg-color-medium);
+            border: 1px solid var(--border-color-light);
             padding: 40px;
             border-radius: 5px;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+            position: relative;
+            z-index: 10;
         }
 
         .login-container h2 {
@@ -36,7 +70,17 @@
             text-transform: uppercase;
             letter-spacing: 5px;
             margin-bottom: 30px;
-            text-shadow: 0 0 5px #00ff00;
+            text-shadow: 0 0 5px var(--main-text-color);
+            position: relative; /* 点滅カーソル用 */
+        }
+        .login-container h2::after { /* 点滅するカーソル */
+            content: '█';
+            color: var(--main-text-color);
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: blink 1s step-end infinite;
         }
 
         /* 入力フィールド */
@@ -51,14 +95,20 @@
             color: #a0a0a0;
             text-transform: uppercase;
             letter-spacing: 1px;
+            position: relative;
+        }
+        .input-group label::before {
+            content: '[SYSTEM] ';
+            color: #808080;
+            font-size: 0.9em;
         }
 
         .input-group input {
             width: 100%;
             padding: 12px;
             background-color: #0d0d0d;
-            border: 1px solid #3a3a3a;
-            color: #00ff00;
+            border: 1px solid var(--border-color-light);
+            color: var(--main-text-color);
             font-family: 'Courier New', Courier, monospace;
             font-size: 1.1em;
             box-sizing: border-box;
@@ -66,7 +116,7 @@
 
         .input-group input:focus {
             outline: none;
-            border-color: #00ff00;
+            border-color: var(--main-text-color);
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
 
@@ -74,8 +124,8 @@
         .login-button {
             width: 100%;
             padding: 15px;
-            background-color: #00ff00;
-            color: #111111;
+            background-color: var(--main-text-color);
+            color: var(--bg-color-dark);
             border: none;
             cursor: pointer;
             font-family: 'Courier New', Courier, monospace;
@@ -96,13 +146,151 @@
             margin-top: 30px;
             font-size: 0.9em;
             color: #666666;
+            position: relative; /* グリッチエフェクト用 */
+        }
+
+        /* ロード画面アニメーション */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: var(--main-text-color);
+            font-size: 2em;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loading-text {
+            animation: text-blink 1s infinite;
+        }
+        .loading-bar {
+            width: 200px;
+            height: 5px;
+            background-color: #3a3a3a;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: var(--main-text-color);
+            animation: load-fill 2s forwards;
+        }
+
+        /* グリッチエフェクト */
+        .glitch {
+            position: relative;
+            color: var(--main-text-color);
+        }
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 red;
+            background: var(--bg-color-dark);
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 blue;
+            background: var(--bg-color-dark);
+            animation: glitch-anim2 3s infinite linear alternate-reverse;
+        }
+
+        /* キーフレームアニメーション */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        @keyframes text-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes load-fill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        @keyframes glitch-anim {
+            0% { clip: rect(44px, 9999px, 42px, 0); transform: skew(0.5deg); }
+            5% { clip: rect(81px, 9999px, 86px, 0); transform: skew(0.9deg); }
+            10% { clip: rect(98px, 9999px, 110px, 0); transform: skew(0.1deg); }
+            15% { clip: rect(138px, 9999px, 94px, 0); transform: skew(0.6deg); }
+            20% { clip: rect(54px, 9999px, 78px, 0); transform: skew(0.2deg); }
+            25% { clip: rect(122px, 9999px, 128px, 0); transform: skew(0.7deg); }
+            30% { clip: rect(11px, 9999px, 5px, 0); transform: skew(0.3deg); }
+            35% { clip: rect(117px, 9999px, 126px, 0); transform: skew(0.8deg); }
+            40% { clip: rect(16px, 9999px, 20px, 0); transform: skew(0.4deg); }
+            45% { clip: rect(63px, 9999px, 68px, 0); transform: skew(0.9deg); }
+            50% { clip: rect(140px, 9999px, 130px, 0); transform: skew(0.1deg); }
+            55% { clip: rect(72px, 9999px, 78px, 0); transform: skew(0.6deg); }
+            60% { clip: rect(33px, 9999px, 28px, 0); transform: skew(0.2deg); }
+            65% { clip: rect(101px, 9999px, 107px, 0); transform: skew(0.7deg); }
+            70% { clip: rect(12px, 9999px, 18px, 0); transform: skew(0.3deg); }
+            75% { clip: rect(144px, 9999px, 150px, 0); transform: skew(0.8deg); }
+            80% { clip: rect(59px, 9999px, 64px, 0); transform: skew(0.4deg); }
+            85% { clip: rect(18px, 9999px, 24px, 0); transform: skew(0.9deg); }
+            90% { clip: rect(112px, 9999px, 118px, 0); transform: skew(0.1deg); }
+            95% { clip: rect(47px, 9999px, 52px, 0); transform: skew(0.6deg); }
+            100% { clip: rect(133px, 9999px, 138px, 0); transform: skew(0.2deg); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(62px, 9999px, 68px, 0); transform: skew(-0.8deg); }
+            5% { clip: rect(104px, 9999px, 98px, 0); transform: skew(-0.3deg); }
+            10% { clip: rect(27px, 9999px, 33px, 0); transform: skew(-0.7deg); }
+            15% { clip: rect(129px, 9999px, 123px, 0); transform: skew(-0.2deg); }
+            20% { clip: rect(18px, 9999px, 24px, 0); transform: skew(-0.9deg); }
+            25% { clip: rect(78px, 9999px, 84px, 0); transform: skew(-0.4deg); }
+            30% { clip: rect(119px, 9999px, 125px, 0); transform: skew(-0.8deg); }
+            35% { clip: rect(3px, 9999px, 9px, 0); transform: skew(-0.3deg); }
+            40% { clip: rect(95px, 9999px, 101px, 0); transform: skew(-0.7deg); }
+            45% { clip: rect(41px, 9999px, 47px, 0); transform: skew(-0.2deg); }
+            50% { clip: rect(150px, 9999px, 144px, 0); transform: skew(-0.9deg); }
+            55% { clip: rect(88px, 9999px, 94px, 0); transform: skew(-0.4deg); }
+            60% { clip: rect(20px, 9999px, 26px, 0); transform: skew(-0.8deg); }
+            65% { clip: rect(110px, 9999px, 116px, 0); transform: skew(-0.3deg); }
+            70% { clip: rect(51px, 9999px, 57px, 0); transform: skew(-0.7deg); }
+            75% { clip: rect(135px, 9999px, 141px, 0); transform: skew(-0.2deg); }
+            80% { clip: rect(6px, 9999px, 12px, 0); transform: skew(-0.9deg); }
+            85% { clip: rect(70px, 9999px, 76px, 0); transform: skew(-0.4deg); }
+            90% { clip: rect(142px, 9999px, 148px, 0); transform: skew(-0.8deg); }
+            95% { clip: rect(30px, 9999px, 36px, 0); transform: skew(-0.3deg); }
+            100% { clip: rect(100px, 9999px, 106px, 0); transform: skew(-0.7deg); }
         }
     </style>
 </head>
 <body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">
+            <span>[ SYSTEM INITIATING ]</span>
+            <span>_</span>
+        </div>
+        <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+        </div>
+    </div>
 
     <div class="login-container">
-        <h2>アクセス認証</h2>
+        <h2 class="glitch" data-text="アクセス認証">アクセス認証</h2>
         <form id="login-form">
             <div class="input-group">
                 <label for="username">オペレーターID</label>
@@ -114,7 +302,7 @@
             </div>
             <button type="submit" class="login-button">ログイン</button>
         </form>
-        <p class="footer-text">システムにアクセスするには認証が必要です。権限のないアクセスは検出されます。</p>
+        <p class="footer-text glitch" data-text="システムにアクセスするには認証が必要です。権限のないアクセスは検出されます。">システムにアクセスするには認証が必要です。権限のないアクセスは検出されます。</p>
     </div>
 
     <script>
@@ -134,6 +322,18 @@
             } else {
                 alert('認証失敗: オペレーターIDまたはパスキーが正しくありません。');
             }
+        });
+    </script>
+    <script>
+        // ロード画面を非表示にするスクリプト
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            // ロードアニメーションが完了するのを待つ (2秒)
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // スクロールを有効にする
+            }, 2000); // ロードバーのアニメーション時間と合わせる
+            document.body.style.overflow = 'hidden'; // ロード中はスクロールを無効にする
         });
     </script>
 </body>
