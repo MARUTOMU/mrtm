@@ -5,25 +5,74 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MRTMワークベース - 司令部メインフレーム</title>
     <style>
+        /* グローバルCSS変数 */
+        :root {
+            --main-text-color: #00ff00; /* ネオングリーン */
+            --sub-text-color: #c0c0c0; /* 薄いグレー */
+            --bg-color-dark: #111111;
+            --bg-color-medium: #1c1c1c;
+            --border-color-light: #3a3a3a;
+            --border-color-medium: #505050;
+            --box-shadow-color: rgba(0, 0, 0, 0.6);
+        }
+
         /* ベース設定 - 環境設定 */
         body {
             font-family: 'Courier New', Courier, monospace;
-            background-color: #111111;
-            color: #c0c0c0;
+            background-color: var(--bg-color-dark);
+            color: var(--sub-text-color);
             margin: 0;
             padding: 0;
             line-height: 1.6;
             transition: background-color 0.5s, color 0.5s;
+            overflow-x: hidden; /* 横スクロールバー非表示 */
+        }
+
+        /* スキャンラインエフェクト */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.2) 1px,
+                transparent 2px,
+                transparent 3px
+            );
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* カスタムスクロールバー */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color-dark);
+            border-left: 1px solid var(--border-color-light);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--main-text-color);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00cc00;
         }
 
         /* ヘッダー - 司令部ディスプレイ */
         header {
-            background-color: #1c1c1c;
+            background-color: var(--bg-color-medium);
             padding: 25px;
             text-align: center;
-            border-bottom: 3px solid #333333;
+            border-bottom: 3px solid var(--border-color-light);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
             position: relative;
+            z-index: 10;
         }
         header::after {
             content: '';
@@ -32,7 +81,7 @@
             left: 0;
             width: 100%;
             height: 3px;
-            background: repeating-linear-gradient(-45deg, #444444, #444444 5px, #1c1c1c 5px, #1c1c1c 10px);
+            background: repeating-linear-gradient(-45deg, #444444, #444444 5px, var(--bg-color-medium) 5px, var(--bg-color-medium) 10px);
         }
         header h1 {
             font-size: 2.8em;
@@ -40,7 +89,7 @@
             text-transform: uppercase;
             letter-spacing: 8px;
             margin: 0;
-            text-shadow: 0 0 5px #00ff00;
+            text-shadow: 0 0 5px var(--main-text-color);
         }
         header p {
             font-size: 1.1em;
@@ -54,33 +103,45 @@
             max-width: 1000px;
             margin: 50px auto;
             padding: 0 20px;
+            position: relative;
+            z-index: 5;
         }
 
         /* セクションヘッダー - ログタイトル */
         h2 {
             font-size: 1.8em;
-            color: #a0a0a0;
-            border-bottom: 2px solid #505050;
+            color: var(--sub-text-color);
+            border-bottom: 2px solid var(--border-color-medium);
             padding-bottom: 8px;
             margin-top: 50px;
             text-transform: uppercase;
             letter-spacing: 2px;
+            position: relative;
+        }
+        h2::before { /* 点滅するカーソル */
+            content: '█';
+            color: var(--main-text-color);
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            animation: blink 1s step-end infinite;
         }
 
         /* セクションボックス - データフレーム */
         .section-box {
-            background-color: #1c1c1c;
-            border: 1px solid #3a3a3a;
+            background-color: var(--bg-color-medium);
+            border: 1px solid var(--border-color-light);
             padding: 25px;
             margin-top: 25px;
-            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+            box-shadow: inset 0 0 10px var(--box-shadow-color);
             border-radius: 5px;
         }
         .section-box h3 {
             font-size: 1.5em;
             color: #b0b0b0;
             margin-top: 0;
-            border-left: 3px solid #00ff00;
+            border-left: 3px solid var(--main-text-color);
             padding-left: 10px;
         }
 
@@ -93,25 +154,24 @@
             border-radius: 50%;
             border: 3px solid #4d4d4d;
             object-fit: cover;
-            /* フィルターは元画像の色を活かすため削除、または調整 */
-            /* filter: grayscale(80%) contrast(1.2); */ 
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: brightness(0.8) contrast(1.1); /* 少し暗く、コントラスト強調 */
         }
         .profile-photo:hover {
             transform: scale(1.05);
-            /* filter: grayscale(0%) contrast(1); */ /* ホバー時のフィルター調整も必要に応じて */
+            filter: brightness(1) contrast(1.2); /* 明るく、コントラストさらに強調 */
         }
 
         /* リンクスタイル - 通信パス */
         a {
-            color: #00ff00;
+            color: var(--main-text-color);
             text-decoration: none;
             transition: color 0.3s ease, text-shadow 0.3s ease;
         }
         a:hover {
             color: #90ff90;
-            text-shadow: 0 0 8px #00ff00;
+            text-shadow: 0 0 8px var(--main-text-color);
         }
         .link-list li {
             margin-bottom: 10px;
@@ -119,9 +179,32 @@
 
         /* X埋め込みのカスタムスタイル - ログフィード */
         .twitter-timeline {
-            border: 1px solid #3a3a3a;
+            border: 1px solid var(--border-color-light);
             border-radius: 5px;
             margin-top: 20px;
+            background-color: #0d0d0d; /* X埋め込みの背景を少し暗く */
+        }
+
+        /* ボタン風リンク - 機密情報アクセス */
+        .access-button {
+            display: inline-block;
+            background-color: #a00000; /* 警告色 */
+            color: white;
+            padding: 10px 20px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            box-shadow: 0 3px 0 #700000;
+            transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+            animation: pulse 1.5s infinite alternate; /* 点滅アニメーション */
+            margin-top: 15px;
+        }
+        .access-button:hover {
+            background-color: #c00000;
+            box-shadow: 0 1px 0 #700000;
+            transform: translateY(2px);
+            animation: none; /* ホバーで点滅停止 */
         }
 
         /* フッター - 著作権・機密情報 */
@@ -131,16 +214,283 @@
             color: #666666;
             font-size: 0.9em;
             margin-top: 60px;
-            border-top: 1px dashed #3a3a3a;
+            border-top: 1px dashed var(--border-color-light);
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* グリッチエフェクト */
+        .glitch {
+            position: relative;
+            color: var(--main-text-color);
+        }
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 red;
+            background: var(--bg-color-dark);
+            overflow: hidden;
+            animation: glitch-anim 2s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: -2px 0 blue;
+            background: var(--bg-color-dark);
+            overflow: hidden;
+            animation: glitch-anim2 3s infinite linear alternate-reverse;
+        }
+
+        /* キーフレームアニメーション */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 3px 0 #700000; }
+            50% { transform: scale(1.02); box-shadow: 0 5px 0 #700000; }
+            100% { transform: scale(1); box-shadow: 0 3px 0 #700000; }
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(44px, 9999px, 42px, 0); transform: skew(0.5deg); }
+            5% { clip: rect(81px, 9999px, 86px, 0); transform: skew(0.9deg); }
+            10% { clip: rect(98px, 9999px, 110px, 0); transform: skew(0.1deg); }
+            15% { clip: rect(138px, 9999px, 94px, 0); transform: skew(0.6deg); }
+            20% { clip: rect(54px, 9999px, 78px, 0); transform: skew(0.2deg); }
+            25% { clip: rect(122px, 9999px, 128px, 0); transform: skew(0.7deg); }
+            30% { clip: rect(11px, 9999px, 5px, 0); transform: skew(0.3deg); }
+            35% { clip: rect(117px, 9999px, 126px, 0); transform: skew(0.8deg); }
+            40% { clip: rect(16px, 9999px, 20px, 0); transform: skew(0.4deg); }
+            45% { clip: rect(63px, 9999px, 68px, 0); transform: skew(0.9deg); }
+            50% { clip: rect(140px, 9999px, 130px, 0); transform: skew(0.1deg); }
+            55% { clip: rect(72px, 9999px, 78px, 0); transform: skew(0.6deg); }
+            60% { clip: rect(33px, 9999px, 28px, 0); transform: skew(0.2deg); }
+            65% { clip: rect(101px, 9999px, 107px, 0); transform: skew(0.7deg); }
+            70% { clip: rect(12px, 9999px, 18px, 0); transform: skew(0.3deg); }
+            75% { clip: rect(144px, 9999px, 150px, 0); transform: skew(0.8deg); }
+            80% { clip: rect(59px, 9999px, 64px, 0); transform: skew(0.4deg); }
+            85% { clip: rect(18px, 9999px, 24px, 0); transform: skew(0.9deg); }
+            90% { clip: rect(112px, 9999px, 118px, 0); transform: skew(0.1deg); }
+            95% { clip: rect(47px, 9999px, 52px, 0); transform: skew(0.6deg); }
+            100% { clip: rect(133px, 9999px, 138px, 0); transform: skew(0.2deg); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(62px, 9999px, 68px, 0); transform: skew(-0.8deg); }
+            5% { clip: rect(104px, 9999px, 98px, 0); transform: skew(-0.3deg); }
+            10% { clip: rect(27px, 9999px, 33px, 0); transform: skew(-0.7deg); }
+            15% { clip: rect(129px, 9999px, 123px, 0); transform: skew(-0.2deg); }
+            20% { clip: rect(18px, 9999px, 24px, 0); transform: skew(-0.9deg); }
+            25% { clip: rect(78px, 9999px, 84px, 0); transform: skew(-0.4deg); }
+            30% { clip: rect(119px, 9999px, 125px, 0); transform: skew(-0.8deg); }
+            35% { clip: rect(3px, 9999px, 9px, 0); transform: skew(-0.3deg); }
+            40% { clip: rect(95px, 9999px, 101px, 0); transform: skew(-0.7deg); }
+            45% { clip: rect(41px, 9999px, 47px, 0); transform: skew(-0.2deg); }
+            50% { clip: rect(150px, 9999px, 144px, 0); transform: skew(-0.9deg); }
+            55% { clip: rect(88px, 9999px, 94px, 0); transform: skew(-0.4deg); }
+            60% { clip: rect(20px, 9999px, 26px, 0); transform: skew(-0.8deg); }
+            65% { clip: rect(110px, 9999px, 116px, 0); transform: skew(-0.3deg); }
+            70% { clip: rect(51px, 9999px, 57px, 0); transform: skew(-0.7deg); }
+            75% { clip: rect(135px, 9999px, 141px, 0); transform: skew(-0.2deg); }
+            80% { clip: rect(6px, 9999px, 12px, 0); transform: skew(-0.9deg); }
+            85% { clip: rect(70px, 9999px, 76px, 0); transform: skew(-0.4deg); }
+            90% { clip: rect(142px, 9999px, 148px, 0); transform: skew(-0.8deg); }
+            95% { clip: rect(30px, 9999px, 36px, 0); transform: skew(-0.3deg); }
+            100% { clip: rect(100px, 9999px, 106px, 0); transform: skew(-0.7deg); }
+        }
+
+
+        /* ロード画面アニメーション */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: var(--main-text-color);
+            font-size: 2em;
+            z-index: 10000;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .loading-text {
+            animation: text-blink 1s infinite;
+        }
+        .loading-bar {
+            width: 200px;
+            height: 5px;
+            background-color: #3a3a3a;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+        .loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: var(--main-text-color);
+            animation: load-fill 2s forwards;
+        }
+
+        @keyframes text-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes load-fill {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        /* アナログ時計のスタイル */
+        .analog-clock {
+            width: 150px;
+            height: 150px;
+            border: 3px solid var(--main-text-color);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+            background-color: #0d0d0d;
+        }
+        .analog-clock::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background-color: var(--main-text-color);
+            border-radius: 50%;
+        }
+
+        .hand {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform-origin: 0% 0%;
+            background-color: var(--main-text-color);
+            box-shadow: 0 0 5px var(--main-text-color);
+            z-index: 1;
+        }
+        .hour-hand {
+            width: 4px;
+            height: 35px;
+            transform: rotate(0deg);
+        }
+        .minute-hand {
+            width: 3px;
+            height: 50px;
+            transform: rotate(0deg);
+        }
+        .second-hand {
+            width: 2px;
+            height: 60px;
+            background-color: red;
+            box-shadow: 0 0 5px red;
+            transform: rotate(0deg);
+        }
+
+        /* 掲示板のスタイル */
+        .bbs-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bbs-form input[type="text"],
+        .bbs-form textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #0d0d0d;
+            border: 1px solid var(--border-color-light);
+            color: var(--main-text-color);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .bbs-form button {
+            background-color: var(--main-text-color);
+            color: var(--bg-color-dark);
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+        .bbs-form button:hover {
+            background-color: #90ff90;
+        }
+
+        .message-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-top: 1px dashed var(--border-color-light);
+        }
+        .message-list li {
+            padding: 15px 0;
+            border-bottom: 1px dashed var(--border-color-light);
+            position: relative;
+        }
+        .message-list .message-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #808080;
+            margin-bottom: 5px;
+        }
+        .message-list .message-text {
+            color: var(--sub-text-color);
+        }
+        .message-list .delete-btn {
+            background-color: transparent;
+            color: red;
+            border: 1px solid red;
+            padding: 5px 10px;
+            font-size: 0.8em;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 0;
+            display: none; /* 初期状態では非表示 */
+        }
+        .message-list .delete-btn.visible {
+            display: block; /* ログイン時に表示 */
         }
     </style>
 </head>
 <body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">
+            <span>[ SYSTEM INITIATING ]</span>
+            <span>_</span>
+        </div>
+        <div class="loading-bar">
+            <div class="loading-bar-fill"></div>
+        </div>
+    </div>
 
     <header>
-        <h1>MRTMワークベース</h1>
+        <h1 class="glitch" data-text="MRTMワークベース">MRTMワークベース</h1>
         <p>機密ファイル - 司令部メインフレーム</p>
     </header>
 
@@ -156,10 +506,38 @@
             <p><strong>任務ステータス:</strong> 稼働中</p>
         </div>
 
+        <div class="section-box">
+            <h3>システム時刻</h3>
+            <div class="analog-clock">
+                <div class="hand hour-hand"></div>
+                <div class="hand minute-hand"></div>
+                <div class="hand second-hand"></div>
+            </div>
+        </div>
+
         <h2>ミッションログ</h2>
         <div class="section-box">
             <h3>最新の作戦記録</h3>
-            <a class="twitter-timeline" href="https://twitter.com/mrtm_111?ref_src=twsrc%5Etfw">Tweets by mrtm_111</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            <a class="twitter-timeline" data-height="600" data-theme="dark" href="https://twitter.com/mrtm_111?ref_src=twsrc%5Etfw">Tweets by mrtm_111</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        </div>
+
+        <h2>通信掲示板</h2>
+        <div class="section-box bbs-section">
+            <h3>メッセージ送信</h3>
+            <div class="bbs-form">
+                <input type="text" id="nameInput" placeholder="オペレーター名 (任意)">
+                <textarea id="messageInput" placeholder="メッセージ内容" rows="4" required></textarea>
+                <button id="postButton">送信</button>
+            </div>
+            
+            <div class="admin-login" style="margin-top: 20px;">
+                <input type="password" id="adminPassword" placeholder="管理者パスキー">
+                <button id="adminLoginBtn">管理者ログイン</button>
+            </div>
+
+            <h3>受信ログ</h3>
+            <ul class="message-list" id="messageList">
+                </ul>
         </div>
 
         <h2>活動記録</h2>
@@ -167,7 +545,7 @@
             <h3>過去の作戦ログ</h3>
             <ul>
                 <li><strong>[作戦名] 新規アートプロジェクト</strong> - 視覚情報伝達任務を完了。目標データはサーバーに格納済み。</li>
-                <li><strong>[作戦名] COMIC MARKET 105</strong> - 敵対勢力との交流を目的とした情報伝達任務。成功裏に終了。</li>
+                <li><strong>[作作戦名] COMIC MARKET 105</strong> - 敵対勢力との交流を目的とした情報伝達任務。成功裏に終了。</li>
                 <li><strong>[作戦名] アカウント設立任務</strong> - 司令部と外部世界との通信リンク構築。完了済み。</li>
             </ul>
             <p>※上記は抜粋データです。全ログは内部サーバーに記録されています。</p>
@@ -186,7 +564,7 @@
         <h2>機密情報</h2>
         <div class="section-box">
             <h3>注意: この情報は機密扱いです</h3>
-            <p>このセクションには、今後の作戦計画や未公開のプロジェクトに関する情報が記載されます。閲覧にはアクセス権限が必要です。アクセス権限を持つ方は、<a href="login.html">こちら</a>からログインしてください。</p>
+            <p>このセクションには、今後の作戦計画や未公開のプロジェクトに関する情報が記載されます。閲覧にはアクセス権限が必要です。アクセス権限を持つ方は、<a href="login.html" class="access-button">アクセス認証</a>からログインしてください。</p>
         </div>
     </div>
 
@@ -194,5 +572,144 @@
         <p>この情報は厳重に管理されています。無断転載および複製は固く禁じます。</p>
     </footer>
 
+    <script>
+        // ロード画面を非表示にするスクリプト
+        window.addEventListener('load', () => {
+            const loadingScreen = document.getElementById('loadingScreen');
+            // ロードアニメーションが完了するのを待つ (2秒)
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                document.body.style.overflow = 'auto'; // スクロールを有効にする
+            }, 2000); // ロードバーのアニメーション時間と合わせる
+            document.body.style.overflow = 'hidden'; // ロード中はスクロールを無効にする
+        });
+
+        // アナログ時計のスクリプト
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            const hourDeg = (hours % 12 + minutes / 60) * 30;
+            const minuteDeg = (minutes + seconds / 60) * 6;
+            const secondDeg = seconds * 6;
+
+            document.querySelector('.hour-hand').style.transform = `rotate(${hourDeg}deg)`;
+            document.querySelector('.minute-hand').style.transform = `rotate(${minuteDeg}deg)`;
+            document.querySelector('.second-hand').style.transform = `rotate(${secondDeg}deg)`;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // 掲示板のスクリプト
+        const postButton = document.getElementById('postButton');
+        const nameInput = document.getElementById('nameInput');
+        const messageInput = document.getElementById('messageInput');
+        const messageList = document.getElementById('messageList');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const adminLoginBtn = document.getElementById('adminLoginBtn');
+
+        let isAdminLoggedIn = false;
+
+        // ローカルストレージからメッセージを読み込む
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
+            messages.forEach(post => {
+                addMessageToDOM(post.name, post.message, post.date, post.id);
+            });
+        }
+
+        // DOMにメッセージを追加する関数
+        function addMessageToDOM(name, message, date, id) {
+            const li = document.createElement('li');
+            li.setAttribute('data-id', id);
+
+            const dateObj = new Date(date);
+            const formattedDate = dateObj.toLocaleDateString('ja-JP') + ' ' + dateObj.toLocaleTimeString('ja-JP');
+
+            li.innerHTML = `
+                <div class="message-info">
+                    <span><strong>オペレーター名:</strong> ${name}</span>
+                    <span><strong>通信日時:</strong> ${formattedDate}</span>
+                </div>
+                <div class="message-text">${message}</div>
+                <button class="delete-btn">[ 削除 ]</button>
+            `;
+            messageList.prepend(li); // 新しいメッセージを一番上に追加
+
+            // 削除ボタンのイベントリスナー
+            const deleteBtn = li.querySelector('.delete-btn');
+            if (isAdminLoggedIn) {
+                deleteBtn.classList.add('visible');
+            }
+            deleteBtn.addEventListener('click', () => {
+                deleteMessage(id);
+            });
+        }
+
+        // 投稿ボタンのイベントリスナー
+        postButton.addEventListener('click', () => {
+            const name = nameInput.value || '名無しオペレーター';
+            const message = messageInput.value;
+
+            if (message.trim() === '') {
+                alert('メッセージを入力してください。');
+                return;
+            }
+
+            const now = new Date().toISOString();
+            const newPost = { name: name, message: message, date: now, id: Date.now() };
+
+            // ローカルストレージに保存
+            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
+            messages.push(newPost);
+            localStorage.setItem('bbsMessages', JSON.stringify(messages));
+
+            // DOMに新しいメッセージを追加
+            addMessageToDOM(newPost.name, newPost.message, newPost.date, newPost.id);
+
+            // 入力フィールドをクリア
+            messageInput.value = '';
+            nameInput.value = '';
+        });
+
+        // 管理者ログイン機能
+        adminLoginBtn.addEventListener('click', () => {
+            if (adminPasswordInput.value === 'marutomu1112') {
+                isAdminLoggedIn = true;
+                alert('管理者として認証されました。');
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.classList.add('visible');
+                });
+                adminPasswordInput.style.display = 'none';
+                adminLoginBtn.style.display = 'none';
+            } else {
+                alert('認証失敗: パスキーが正しくありません。');
+            }
+        });
+
+        // メッセージを削除する関数
+        function deleteMessage(id) {
+            if (!isAdminLoggedIn) {
+                alert('管理者権限が必要です。');
+                return;
+            }
+
+            // ローカルストレージから削除
+            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
+            messages = messages.filter(msg => msg.id !== id);
+            localStorage.setItem('bbsMessages', JSON.stringify(messages));
+
+            // DOMから削除
+            const element = document.querySelector(`li[data-id='${id}']`);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // ページ読み込み時にメッセージをロード
+        loadMessages();
+    </script>
 </body>
 </html>
