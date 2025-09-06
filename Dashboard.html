@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダッシュボード - 司令部メインフレーム</title>
+    <style>
+        /* ベース設定 - 環境設定 */
+        body {
+            font-family: 'courier new', courier, monospace;
+            background-color: #111111;
+            color: #c0c0c0;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        /* ヘッダー - 司令部ディスプレイ */
+        header {
+            background-color: #1c1c1c;
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #333333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: repeating-linear-gradient(-45deg, #444444, #444444 5px, #1c1c1c 5px, #1c1c1c 10px);
+        }
+        header h1 {
+            font-size: 2.8em;
+            color: #d0d0d0;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            margin: 0;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        header p {
+            font-size: 1.1em;
+            color: #808080;
+            margin: 8px 0 0;
+            letter-spacing: 3px;
+        }
+
+        /* メインコンテンツ - データコンソール */
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 0 20px;
+        }
+
+        /* セクションヘッダー - ログタイトル */
+        h2 {
+            font-size: 1.8em;
+            color: #a0a0a0;
+            border-bottom: 2px solid #505050;
+            padding-bottom: 8px;
+            margin-top: 50px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* セクションボックス - データフレーム */
+        .section-box {
+            background-color: #1c1c1c;
+            border: 1px solid #3a3a3a;
+            padding: 25px;
+            margin-top: 25px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.6);
+            border-radius: 5px;
+        }
+        .section-box h3 {
+            font-size: 1.5em;
+            color: #b0b0b0;
+            margin-top: 0;
+            border-left: 3px solid #00ff00;
+            padding-left: 10px;
+        }
+
+        /* リンクスタイル - 通信パス */
+        a {
+            color: #00ff00;
+            text-decoration: none;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        a:hover {
+            color: #90ff90;
+            text-shadow: 0 0 8px #00ff00;
+        }
+
+        /* メッセージ専用スタイル */
+        .message-box {
+            background-color: #0d0d0d;
+            border: 1px solid #00ff00;
+            padding: 30px;
+            margin-top: 30px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+        .message-box p {
+            font-size: 1.6em;
+            color: #00ff00;
+            letter-spacing: 2px;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+        }
+        .message-box .discord-link {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #00ff00;
+            color: #111111;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+        }
+        .message-box .discord-link:hover {
+            background-color: #90ff90;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
+        }
+
+        /* フッター - 著作権・機密情報 */
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #666666;
+            font-size: 0.9em;
+            margin-top: 60px;
+            border-top: 1px dashed #3a3a3a;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>司令部メインフレーム</h1>
+        <p>認証済みアクセス</p>
+    </header>
+
+    <div class="container">
+        
+        <h2>通信ログ</h2>
+        <div class="section-box message-box">
+            <p>君の帰りを待っていた。</p>
+            <a href="https://discord.gg/8BEXC4hU" target="_blank" class="discord-link">
+                Discordサーバーへ接続
+            </a>
+            <p style="margin-top: 20px; font-size: 0.9em; color: #808080;">通信チャンネルの安定化には数秒を要する場合があります。</p>
+        </div>
+
+        <h2>システムステータス</h2>
+        <div class="section-box">
+            <h3>現在時刻</h3>
+            <p><span id="current-time"></span></p>
+        </div>
+
+        <h2>タスクリスト</h2>
+        <div class="section-box">
+            <h3>緊急任務</h3>
+            <ul>
+                <li>[優先度: 高] データ整合性チェック: 全サブシステム稼働状況の監視</li>
+                <li>[優先度: 中] プロトコル更新: 通信セキュリティパッチの適用</li>
+                <li>[優先度: 低] ドキュメント整理: 過去の作戦記録のアーカイブ</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>この情報は厳重に管理されています。無断アクセスおよび複製は固く禁じます。</p>
+    </footer>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            document.getElementById('current-time').textContent = now.toLocaleString('ja-JP', options);
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+
+</body>
+</html>
