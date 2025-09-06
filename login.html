@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン - 司令部メインフレーム</title>
+    <style>
+        /* ベース設定 */
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #111111;
+            color: #c0c0c0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        /* ログインコンテナ */
+        .login-container {
+            width: 90%;
+            max-width: 400px;
+            background-color: #1c1c1c;
+            border: 1px solid #3a3a3a;
+            padding: 40px;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+
+        .login-container h2 {
+            font-size: 2em;
+            color: #d0d0d0;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 5px #00ff00;
+        }
+
+        /* 入力フィールド */
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0a0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #0d0d0d;
+            border: 1px solid #3a3a3a;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        /* ログインボタン */
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background-color: #00ff00;
+            color: #111111;
+            border: none;
+            cursor: pointer;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .login-button:hover {
+            background-color: #90ff90;
+            transform: translateY(-2px);
+        }
+
+        /* フッターテキスト */
+        .footer-text {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #666666;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>アクセス認証</h2>
+        <form id="login-form">
+            <div class="input-group">
+                <label for="username">オペレーターID</label>
+                <input type="text" id="username" name="username" placeholder="識別番号" required>
+            </div>
+            <div class="input-group">
+                <label for="password">パスキー</label>
+                <input type="password" id="password" name="password" placeholder="パスワード" required>
+            </div>
+            <button type="submit" class="login-button">ログイン</button>
+        </form>
+        <p class="footer-text">システムにアクセスするには認証が必要です。権限のないアクセスは検出されます。</p>
+    </div>
+
+    <script>
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            const userId = parseInt(usernameInput, 10);
+            const isIdValid = !isNaN(userId) && userId >= 1 && userId <= 100;
+            const isPasswordValid = passwordInput === 'garuoji';
+
+            if (isIdValid && isPasswordValid) {
+                // 認証成功時に dashboard.html に遷移
+                window.location.href = 'dashboard.html';
+            } else {
+                alert('認証失敗: オペレーターIDまたはパスキーが正しくありません。');
+            }
+        });
+    </script>
+</body>
+</html>
