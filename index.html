@@ -570,6 +570,7 @@
         <div class="section-box">
             <h3>過去の作戦ログ</h3>
             <ul>
+                <li><strong>[作戦名] 掲示板発足</strong> - オペレーター諸君、掲示板に書き込めるようになったぞ。</li>
                 <li><strong>[作戦名] 新規アートプロジェクト</strong> - 視覚情報伝達任務を完了。目標データはサーバーに格納済み。</li>
                 <li><strong>[作戦名] COMIC MARKET 105</strong> - 敵対勢力との交流を目的とした情報伝達任務。成功裏に終了。</li>
                 <li><strong>[作戦名] アカウント設立任務</strong> - 司令部と外部世界との通信リンク構築。完了済み。</li>
@@ -616,16 +617,21 @@
             const minutes = now.getMinutes();
             const seconds = now.getSeconds();
 
+            // 時刻を角度に変換
             const hourDeg = (hours % 12 + minutes / 60) * 30;
             const minuteDeg = (minutes + seconds / 60) * 6;
             const secondDeg = seconds * 6;
 
+            // 針に角度を適用
             document.querySelector('.hour-hand').style.transform = `rotate(${hourDeg}deg)`;
             document.querySelector('.minute-hand').style.transform = `rotate(${minuteDeg}deg)`;
             document.querySelector('.second-hand').style.transform = `rotate(${secondDeg}deg)`;
         }
-        updateClock();
+        
+        // 1秒ごとに時計を更新
         setInterval(updateClock, 1000);
+        // 最初のロード時に一度実行して、時計をすぐに表示
+        updateClock();
 
         // Firebase掲示板のスクリプト
         const firebaseConfig = {
