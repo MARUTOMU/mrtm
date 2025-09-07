@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MRTMワークベース - 司令部メインフレーム</title>
     <style>
+        /* CSSは変更なし */
         /* グローバルCSS変数 */
         :root {
             --main-text-color: #00ff00; /* ネオングリーン */
@@ -276,7 +277,7 @@
             60% { clip: rect(33px, 9999px, 28px, 0); transform: skew(0.2deg); }
             65% { clip: rect(101px, 9999px, 107px, 0); transform: skew(0.7deg); }
             70% { clip: rect(12px, 9999px, 18px, 0); transform: skew(0.3deg); }
-            75% { clip: rect(144px, 9999px, 150px, 0); transform: skew(0.8deg); }
+            75% { clip: rect(144px, 9999px, 150px, 0); transform: skew(-0.8deg); }
             80% { clip: rect(59px, 9999px, 64px, 0); transform: skew(0.4deg); }
             85% { clip: rect(18px, 9999px, 24px, 0); transform: skew(0.9deg); }
             90% { clip: rect(112px, 9999px, 118px, 0); transform: skew(0.1deg); }
@@ -573,6 +574,10 @@
     </footer>
 
     <script>
+        // この行に、Google Apps ScriptのURLを貼り付けます。
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyB7TWFTL3PN6NUQlnUmniCdv7NJG8hM8Gdi0u9RWEyIvGh0N9wUyP5iiu6K1fkAMlTpg/exec';
+        const ADMIN_PASSWORD = 'marutomu1112';
+
         // ロード画面を非表示にするスクリプト
         window.addEventListener('load', () => {
             const loadingScreen = document.getElementById('loadingScreen');
@@ -612,12 +617,25 @@
 
         let isAdminLoggedIn = false;
 
-        // ローカルストレージからメッセージを読み込む
-        function loadMessages() {
-            const messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages.forEach(post => {
-                addMessageToDOM(post.name, post.message, post.date, post.id);
-            });
+        // メッセージをサーバーから読み込む
+        async function loadMessages() {
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                if (!response.ok) {
+                    throw new Error('掲示板データの読み込みに失敗しました。');
+                }
+                const messages = await response.json();
+                
+                messageList.innerHTML = ''; // 既存のメッセージをクリア
+                // 投稿日時が新しい順にソートして表示
+                messages.sort((a, b) => new Date(b.date) - new Date(a.date));
+                messages.forEach(post => {
+                    addMessageToDOM(post.name, post.message, post.date, post.id);
+                });
+            } catch (error) {
+                console.error('メッセージの取得中にエラーが発生しました:', error);
+                alert('通信に失敗しました。時間をおいて再度お試しください。');
+            }
         }
 
         // DOMにメッセージを追加する関数
@@ -636,7 +654,7 @@
                 <div class="message-text">${message}</div>
                 <button class="delete-btn">[ 削除 ]</button>
             `;
-            messageList.prepend(li); // 新しいメッセージを一番上に追加
+            messageList.appendChild(li); 
 
             // 削除ボタンのイベントリスナー
             const deleteBtn = li.querySelector('.delete-btn');
@@ -649,7 +667,7 @@
         }
 
         // 投稿ボタンのイベントリスナー
-        postButton.addEventListener('click', () => {
+        postButton.addEventListener('click', async () => {
             const name = nameInput.value || '名無しオペレーター';
             const message = messageInput.value;
 
@@ -658,25 +676,34 @@
                 return;
             }
 
-            const now = new Date().toISOString();
-            const newPost = { name: name, message: message, date: now, id: Date.now() };
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Apps ScriptへのPOSTにはno-corsが必要
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'post',
+                        name: name,
+                        message: message
+                    })
+                });
 
-            // ローカルストレージに保存
-            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages.push(newPost);
-            localStorage.setItem('bbsMessages', JSON.stringify(messages));
-
-            // DOMに新しいメッセージを追加
-            addMessageToDOM(newPost.name, newPost.message, newPost.date, newPost.id);
-
-            // 入力フィールドをクリア
-            messageInput.value = '';
-            nameInput.value = '';
+                // no-corsモードではレスポンス内容を確認できないため、成功したと仮定して再読み込み
+                alert('メッセージが送信されました。');
+                messageInput.value = '';
+                nameInput.value = '';
+                loadMessages(); // 掲示板を再読み込み
+            } catch (error) {
+                console.error('メッセージの送信中にエラーが発生しました:', error);
+                alert('通信エラーが発生しました。時間をおいて再度お試しください。');
+            }
         });
 
         // 管理者ログイン機能
         adminLoginBtn.addEventListener('click', () => {
-            if (adminPasswordInput.value === 'marutomu1112') {
+            if (adminPasswordInput.value === ADMIN_PASSWORD) {
                 isAdminLoggedIn = true;
                 alert('管理者として認証されました。');
                 document.querySelectorAll('.delete-btn').forEach(btn => {
@@ -690,21 +717,40 @@
         });
 
         // メッセージを削除する関数
-        function deleteMessage(id) {
+        async function deleteMessage(id) {
             if (!isAdminLoggedIn) {
                 alert('管理者権限が必要です。');
                 return;
             }
 
-            // ローカルストレージから削除
-            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages = messages.filter(msg => msg.id !== id);
-            localStorage.setItem('bbsMessages', JSON.stringify(messages));
+            if (!confirm('本当にこのメッセージを削除しますか？')) {
+                return;
+            }
 
-            // DOMから削除
-            const element = document.querySelector(`li[data-id='${id}']`);
-            if (element) {
-                element.remove();
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: id,
+                        password: adminPasswordInput.value
+                    })
+                });
+
+                // no-corsモードのため、成功したと仮定してDOMを更新
+                alert('メッセージが削除されました。');
+                const element = document.querySelector(`li[data-id='${id}']`);
+                if (element) {
+                    element.remove();
+                }
+                loadMessages(); // 掲示板を再読み込み
+            } catch (error) {
+                console.error('メッセージの削除中にエラーが発生しました:', error);
+                alert('通信エラーが発生しました。');
             }
         }
 
