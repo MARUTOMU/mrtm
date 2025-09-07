@@ -25,7 +25,6 @@
             padding: 0;
             line-height: 1.6;
             transition: background-color 0.5s, color 0.5s;
-            overflow-x: hidden; /* 横スクロールバー非表示 */
         }
 
         /* スキャンラインエフェクト */
@@ -100,7 +99,7 @@
 
         /* メインコンテンツ - データコンソール */
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 50px auto;
             padding: 0 20px;
             position: relative;
@@ -476,6 +475,34 @@
         .message-list .delete-btn.visible {
             display: block; /* ログイン時に表示 */
         }
+
+        /* 画面幅が小さいデバイス向けのレスポンシブデザイン */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+                letter-spacing: 4px;
+            }
+            header p {
+                font-size: 0.9em;
+                letter-spacing: 2px;
+            }
+            .container {
+                margin: 20px auto;
+                padding: 0 10px;
+            }
+            h2 {
+                font-size: 1.5em;
+                margin-top: 30px;
+            }
+            .section-box {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            .profile-photo {
+                width: 120px;
+                height: 120px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -495,7 +522,6 @@
     </header>
 
     <div class="container">
-        
         <h2>オペレーター情報</h2>
         <div class="section-box">
             <h3>メインデータ</h3>
@@ -545,7 +571,7 @@
             <h3>過去の作戦ログ</h3>
             <ul>
                 <li><strong>[作戦名] 新規アートプロジェクト</strong> - 視覚情報伝達任務を完了。目標データはサーバーに格納済み。</li>
-                <li><strong>[作作戦名] COMIC MARKET 105</strong> - 敵対勢力との交流を目的とした情報伝達任務。成功裏に終了。</li>
+                <li><strong>[作戦名] COMIC MARKET 105</strong> - 敵対勢力との交流を目的とした情報伝達任務。成功裏に終了。</li>
                 <li><strong>[作戦名] アカウント設立任務</strong> - 司令部と外部世界との通信リンク構築。完了済み。</li>
             </ul>
             <p>※上記は抜粋データです。全ログは内部サーバーに記録されています。</p>
@@ -572,16 +598,16 @@
         <p>この情報は厳重に管理されています。無断転載および複製は固く禁じます。</p>
     </footer>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script>
         // ロード画面を非表示にするスクリプト
         window.addEventListener('load', () => {
             const loadingScreen = document.getElementById('loadingScreen');
-            // ロードアニメーションが完了するのを待つ (2秒)
-            setTimeout(() => {
-                loadingScreen.classList.add('hidden');
-                document.body.style.overflow = 'auto'; // スクロールを有効にする
-            }, 2000); // ロードバーのアニメーション時間と合わせる
-            document.body.style.overflow = 'hidden'; // ロード中はスクロールを無効にする
+            // DOMContentLoadedではなく、loadイベントを使用
+            // すべてのコンテンツ（画像やCSSなど）が完全に読み込まれた後に実行される
+            loadingScreen.classList.add('hidden');
         });
 
         // アナログ時計のスクリプト
@@ -602,7 +628,22 @@
         updateClock();
         setInterval(updateClock, 1000);
 
-        // 掲示板のスクリプト
+        // Firebase掲示板のスクリプト
+        const firebaseConfig = {
+            apiKey: "AIzaSyDTqaFQtfmaGJHrtkDOjoV8gfndDiNAy1U",
+            authDomain: "mrtm-workbase.firebaseapp.com",
+            databaseURL: "https://mrtm-workbase-default-rtdb.firebaseio.com",
+            projectId: "mrtm-workbase",
+            storageBucket: "mrtm-workbase.firebasestorage.app",
+            messagingSenderId: "1018845696561",
+            appId: "1:1018845696561:web:3e030a8d6dedd9ed61bb10",
+            measurementId: "G-XHWDDEK2N2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const messagesRef = db.ref('messages');
+
         const postButton = document.getElementById('postButton');
         const nameInput = document.getElementById('nameInput');
         const messageInput = document.getElementById('messageInput');
@@ -612,15 +653,19 @@
 
         let isAdminLoggedIn = false;
 
-        // ローカルストレージからメッセージを読み込む
-        function loadMessages() {
-            const messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages.forEach(post => {
-                addMessageToDOM(post.name, post.message, post.date, post.id);
-            });
-        }
+        messagesRef.on('value', (snapshot) => {
+            const messages = snapshot.val();
+            messageList.innerHTML = '';
+            
+            if (messages) {
+                const messageArray = Object.values(messages);
+                messageArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                messageArray.forEach(post => {
+                    addMessageToDOM(post.name, post.message, post.date, post.id);
+                });
+            }
+        });
 
-        // DOMにメッセージを追加する関数
         function addMessageToDOM(name, message, date, id) {
             const li = document.createElement('li');
             li.setAttribute('data-id', id);
@@ -636,9 +681,8 @@
                 <div class="message-text">${message}</div>
                 <button class="delete-btn">[ 削除 ]</button>
             `;
-            messageList.prepend(li); // 新しいメッセージを一番上に追加
+            messageList.appendChild(li);
 
-            // 削除ボタンのイベントリスナー
             const deleteBtn = li.querySelector('.delete-btn');
             if (isAdminLoggedIn) {
                 deleteBtn.classList.add('visible');
@@ -648,7 +692,6 @@
             });
         }
 
-        // 投稿ボタンのイベントリスナー
         postButton.addEventListener('click', () => {
             const name = nameInput.value || '名無しオペレーター';
             const message = messageInput.value;
@@ -659,22 +702,12 @@
             }
 
             const now = new Date().toISOString();
-            const newPost = { name: name, message: message, date: now, id: Date.now() };
-
-            // ローカルストレージに保存
-            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages.push(newPost);
-            localStorage.setItem('bbsMessages', JSON.stringify(messages));
-
-            // DOMに新しいメッセージを追加
-            addMessageToDOM(newPost.name, newPost.message, newPost.date, newPost.id);
-
-            // 入力フィールドをクリア
+            const newPost = { name: name, message: message, date: now, id: now + name };
+            messagesRef.push(newPost);
             messageInput.value = '';
             nameInput.value = '';
         });
 
-        // 管理者ログイン機能
         adminLoginBtn.addEventListener('click', () => {
             if (adminPasswordInput.value === 'garuoji') {
                 isAdminLoggedIn = true;
@@ -689,27 +722,26 @@
             }
         });
 
-        // メッセージを削除する関数
         function deleteMessage(id) {
             if (!isAdminLoggedIn) {
                 alert('管理者権限が必要です。');
                 return;
             }
 
-            // ローカルストレージから削除
-            let messages = JSON.parse(localStorage.getItem('bbsMessages')) || [];
-            messages = messages.filter(msg => msg.id !== id);
-            localStorage.setItem('bbsMessages', JSON.stringify(messages));
-
-            // DOMから削除
-            const element = document.querySelector(`li[data-id='${id}']`);
-            if (element) {
-                element.remove();
+            if (!confirm('本当にこのメッセージを削除しますか？')) {
+                return;
             }
-        }
 
-        // ページ読み込み時にメッセージをロード
-        loadMessages();
+            messagesRef.once('value', snapshot => {
+                snapshot.forEach(childSnapshot => {
+                    const childData = childSnapshot.val();
+                    if (childData.id === id) {
+                        childSnapshot.ref.remove();
+                        return true;
+                    }
+                });
+            });
+        }
     </script>
 </body>
 </html>
