@@ -159,28 +159,28 @@
         /* メッセージ専用スタイル */
         .message-box {
             background-color: #0d0d0d;
-            border: 1px solid var(--main-text-color); /* グローバル変数を使用 */
+            border: 1px solid var(--main-text-color);
             padding: 30px;
             margin-top: 30px;
             text-align: center;
             border-radius: 8px;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-            position: relative; /* グリッチエフェクト用 */
+            position: relative;
         }
         .message-box p {
             font-size: 1.6em;
-            color: var(--main-text-color); /* グローバル変数を使用 */
+            color: var(--main-text-color);
             letter-spacing: 2px;
             line-height: 1.8;
             margin-bottom: 25px;
             text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
-            position: relative; /* グリッチエフェクト用 */
+            position: relative;
         }
         .message-box .discord-link {
             display: inline-block;
             padding: 12px 25px;
-            background-color: var(--main-text-color); /* グローバル変数を使用 */
-            color: var(--bg-color-dark); /* グローバル変数を使用 */
+            background-color: var(--main-text-color);
+            color: var(--bg-color-dark);
             text-decoration: none;
             border-radius: 5px;
             font-weight: bold;
@@ -201,7 +201,7 @@
             color: #666666;
             font-size: 0.9em;
             margin-top: 60px;
-            border-top: 1px dashed var(--border-color-light); /* グローバル変数を使用 */
+            border-top: 1px dashed var(--border-color-light);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
@@ -386,6 +386,16 @@
                 <li>[優先度: 低] ドキュメント整理: 過去の作戦記録のアーカイブ</li>
             </ul>
         </div>
+        
+        <div class="section-box">
+            <h3>進行中の予定</h3>
+            <ul>
+                <li>[優先度: 高] ログイン機能の追加</li>
+                <li>[優先度: 中] 閲覧カウンターの設置</li>
+                <li>[優先度: 低] イベント企画の予定表</li>
+                <li>[優先度: 低] プロフィールの追加</li>
+            </ul>
+        </div>
     </div>
 
     <footer>
@@ -420,6 +430,5 @@
             document.body.style.overflow = 'hidden'; // ロード中はスクロールを無効にする
         });
     </script>
-
 </body>
 </html>
